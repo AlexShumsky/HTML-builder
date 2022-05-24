@@ -21,7 +21,7 @@ fs.readFile(boundleIndexPath, (err, file) => {
   fs.copyFile(originalIndexPath, boundleIndexPath, () => {});
 });
 
-function buildBundle() {
+function buildHtml() {
   fs.readdir(componentsPath, (err, files) => {
     if (err) {
     }
@@ -92,6 +92,45 @@ function buildStyles() {
     }
   });
 }
+function copyAssets() {
+  const assetsPath = path.join(__dirname, "assets");
+  const bundleAssetsPath = path.resolve(boundlePath, "assets");
 
-buildBundle();
+  function copyRecursively(directory, copyDirectory) {
+    fs.readdir(
+      path.join(directory),
+      {
+        withFileTypes: true,
+      },
+      (err, files) => {
+        if (err) {
+        }
+        for (let item of files) {
+          if (item.isFile()) {
+            fs.copyFile(
+              path.join(directory, item.name),
+              path.join(copyDirectory, item.name),
+              () => {}
+            );
+          } else {
+            fs.mkdir(
+              path.join(copyDirectory, item.name),
+              { recursive: true },
+              () => {}
+            );
+            copyRecursively(
+              path.join(directory, item.name),
+              path.join(copyDirectory, item.name)
+            );
+          }
+        }
+      }
+    );
+  }
+
+  copyRecursively(assetsPath, bundleAssetsPath);
+}
+
+buildHtml();
 buildStyles();
+copyAssets();
