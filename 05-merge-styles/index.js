@@ -12,15 +12,18 @@ fs.readFile(filePathTo, (err, file) => {
 });
 
 fs.readdir(filePath, function (err, files) {
-  if (err) console.error();
+  if (err) {
+  }
 
   for (const file of files) {
     const stylesFile = path.resolve(filePath, file);
     fs.stat(stylesFile, (err, stats) => {
-      if (err) console.error();
+      if (err) {
+      }
       if (stats.isFile() && path.extname(file) == ".css") {
         fs.readFile(stylesFile, "utf8", function (err, data) {
-          if (err) console.error();
+          if (err) {
+          }
           arr.push(data);
           fs.appendFile(filePathTo, arr.join("\n"), function () {});
         });

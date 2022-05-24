@@ -12,46 +12,86 @@ fs.mkdir(boundlePath, { recursive: true }, () => {});
 
 /* check if index exists, then delete and create new index; else createnew index*/
 
-fs.readdir(boundlePath, (err, file) => {
+fs.readFile(boundleIndexPath, (err, file) => {
   if (err) {
   }
   if (file) {
     fs.unlink(boundleIndexPath, () => {});
-  } else fs.copyFile(originalIndexPath, boundleIndexPath, () => {});
+  }
+  fs.copyFile(originalIndexPath, boundleIndexPath, () => {});
 });
 
-/* check if index exists, then delete and create new index; else createnew index*/
+function buildBundle() {
+  fs.readdir(componentsPath, (err, files) => {
+    if (err) {
+    }
+    if (files) {
+      let htmlText = "";
+      fs.readFile(originalIndexPath, (err, data) => {
+        if (err) {
+        }
+        if (data) {
+          htmlText += String(data);
+        }
 
-fs.readdir(componentsPath, (err, files) => {
-  if (err) {
-  }
-  if (files) {
-    let htmlText = "";
-    fs.readFile(originalIndexPath, (err, data) => {
-      if (err) {
-      }
-      if (data) {
-        htmlText += String(data);
-      }
+        for (const file of files) {
+          const componentPath = path.resolve(componentsPath, file);
+          const componentName = path.basename(file, path.extname(file));
+          fs.readFile(componentPath, (err, data) => {
+            if (err) {
+            }
+            if (data) {
+              const componentStrData = String(data);
+              htmlText = htmlText.replace(
+                `{{${componentName}}}`,
+                componentStrData
+              );
+            }
 
+            const boundleHtmlWs = fs.createWriteStream(
+              boundleIndexPath,
+              "utf8"
+            );
+            boundleHtmlWs.write(htmlText, (err) => {
+              if (err) buildBundle();
+            });
+          });
+        }
+      });
+    }
+  });
+}
+function buildStyles() {
+  const stylesComponentsPath = path.join(__dirname, "styles");
+  const styleBoundlePath = path.resolve(boundlePath, "style.css");
+  const stylesArr = [];
+  fs.readFile(styleBoundlePath, (err, file) => {
+    if (err) {
+    }
+    if (file) fs.unlink(styleBoundlePath, () => {});
+  });
+  fs.readdir(stylesComponentsPath, (err, files) => {
+    if (err) {
+    }
+    if (files) {
       for (const file of files) {
-        const componentPath = path.resolve(componentsPath, file);
-        const componentName = path.basename(file, path.extname(file));
-        fs.readFile(componentPath, (err, data) => {
+        const stylesFile = path.resolve(stylesComponentsPath, file);
+        fs.stat(stylesFile, (err, stats) => {
           if (err) {
           }
-          if (data) {
-            const componentStrData = String(data);
-            htmlText = htmlText.replace(
-              `{{${componentName}}}`,
-              componentStrData
-            );
+          if (stats.isFile() && path.extname(file) == ".css") {
+            fs.readFile(stylesFile, "utf8", (err, data) => {
+              if (err) {
+              }
+              stylesArr.push(data);
+              fs.appendFile(styleBoundlePath, stylesArr.join("\n"), () => {});
+            });
           }
-
-          const boundleHtmlWs = fs.createWriteStream(boundleIndexPath, "utf8");
-          boundleHtmlWs.write(htmlText);
         });
       }
-    });
-  }
-});
+    }
+  });
+}
+
+buildBundle();
+buildStyles();
