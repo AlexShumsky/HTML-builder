@@ -17,9 +17,8 @@ fs.readdir(boundlePath, (err, file) => {
   }
   if (file) {
     fs.unlink(boundleIndexPath, () => {});
-  }
+  } else fs.copyFile(originalIndexPath, boundleIndexPath, () => {});
 });
-fs.copyFile(originalIndexPath, boundleIndexPath, () => {});
 
 /* check if index exists, then delete and create new index; else createnew index*/
 
@@ -37,15 +36,22 @@ fs.readdir(componentsPath, (err, files) => {
 
       for (const file of files) {
         const componentPath = path.resolve(componentsPath, file);
-        const readFileStream = fs.createReadStream(componentPath);
-        const writeStream = fs.createWriteStream(boundleIndexPath, "utf8");
-        console.log(componentPath);
-        readFileStream.on("data", (chunk) => {
-          writeStream.write(String(chunk));
+        const componentName = path.basename(file, path.extname(file));
+        fs.readFile(componentPath, (err, data) => {
+          if (err) {
+          }
+          if (data) {
+            const componentStrData = String(data);
+            htmlText = htmlText.replace(
+              `{{${componentName}}}`,
+              componentStrData
+            );
+          }
+
+          const boundleHtmlWs = fs.createWriteStream(boundleIndexPath, "utf8");
+          boundleHtmlWs.write(htmlText);
         });
       }
-
-      console.log(htmlText);
     });
   }
 });
