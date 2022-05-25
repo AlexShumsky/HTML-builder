@@ -8,7 +8,7 @@ fs.readdir(folderPath, (err, files) => {
   if (err) console.error("folder Error");
   for (const file of files) {
     const filePath = path.resolve(folderPath, file);
-    const fileExt = path.extname(file);
+    const fileExt = path.extname(file).slice(1);
     const fileName = path.basename(file, fileExt);
 
     fs.stat(filePath, (err, stats) => {
