@@ -17,6 +17,7 @@ fs.readdir(filePath, function (err, files) {
 
   for (const file of files) {
     const stylesFile = path.resolve(filePath, file);
+
     fs.stat(stylesFile, (err, stats) => {
       if (err) {
       }
@@ -25,7 +26,9 @@ fs.readdir(filePath, function (err, files) {
           if (err) {
           }
           arr.push(data);
+
           fs.appendFile(filePathTo, arr.join("\n"), function () {});
+          arr.length = 0;
         });
       }
     });
