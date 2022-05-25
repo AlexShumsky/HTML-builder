@@ -37,24 +37,31 @@ function buildHtml() {
         for (const file of files) {
           const componentPath = path.resolve(componentsPath, file);
           const componentName = path.basename(file, path.extname(file));
-          fs.readFile(componentPath, (err, data) => {
+
+          fs.stat(componentPath, (err, stats) => {
             if (err) {
             }
-            if (data) {
-              const componentStrData = String(data);
-              htmlText = htmlText.replace(
-                `{{${componentName}}}`,
-                componentStrData
-              );
-            }
+            if (stats.isFile() && path.extname(file) == ".html") {
+              fs.readFile(componentPath, (err, data) => {
+                if (err) {
+                }
+                if (data) {
+                  const componentStrData = String(data);
+                  htmlText = htmlText.replace(
+                    `{{${componentName}}}`,
+                    componentStrData
+                  );
+                }
 
-            const boundleHtmlWs = fs.createWriteStream(
-              boundleIndexPath,
-              "utf8"
-            );
-            boundleHtmlWs.write(htmlText, (err) => {
-              if (err) buildBundle();
-            });
+                const boundleHtmlWs = fs.createWriteStream(
+                  boundleIndexPath,
+                  "utf8"
+                );
+                boundleHtmlWs.write(htmlText, (err) => {
+                  if (err) buildBundle();
+                });
+              });
+            }
           });
         }
       });
