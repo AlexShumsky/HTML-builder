@@ -19,6 +19,10 @@ fs.readFile(boundleIndexPath, (err, file) => {
     fs.unlink(boundleIndexPath, () => {});
   }
   fs.copyFile(originalIndexPath, boundleIndexPath, () => {});
+
+  buildHtml();
+  buildStyles();
+  copyAssets();
 });
 
 function buildHtml() {
@@ -108,6 +112,7 @@ function copyAssets() {
       path.join(directory),
       {
         withFileTypes: true,
+        recursive: true,
       },
       (err, files) => {
         if (err) {
@@ -137,7 +142,3 @@ function copyAssets() {
 
   copyRecursively(assetsPath, bundleAssetsPath);
 }
-
-buildHtml();
-buildStyles();
-copyAssets();
