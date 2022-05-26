@@ -128,11 +128,12 @@ function copyAssets() {
             fs.mkdir(
               path.join(copyDirectory, item.name),
               { recursive: true },
-              () => {}
-            );
-            copyRecursively(
-              path.join(directory, item.name),
-              path.join(copyDirectory, item.name)
+              () => {
+                copyRecursively(
+                  path.join(directory, item.name),
+                  path.join(copyDirectory, item.name)
+                );
+              }
             );
           }
         }

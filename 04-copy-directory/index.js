@@ -1,37 +1,32 @@
-const fs = require("fs");
 const path = require("path");
+const fsPromises = require("fs/promises");
+const fs = require("fs");
 
-const sourceFolderPath = path.join(__dirname, "files");
-const copyFolderPath = path.join(__dirname, "files-copy");
+const newDirPath = path.join(__dirname, path.sep, "files-copy");
+const dirPath = path.join(__dirname, path.sep, "files");
 
-fs.mkdir(copyFolderPath, { recursive: true }, (err) => {
-  if (err) console.error(err);
-
-  fs.readdir(path.join(__dirname, "/files-copy"), (err, files) => {
-    if (err) {
-    }
-    (files || []).forEach((file) =>
-      fs.unlink(path.join(__dirname, `/files-copy/${file}`), function (err) {
-        if (err) {
+fsPromises.readdir(dirPath).then(async (files) => {
+  fs.access(newDirPath, fs.constants.F_OK, function (error) {
+    if (error) {
+      fsPromises.mkdir(newDirPath, { recursive: true }).then(async () => {
+        for (let file of files) {
+          const filePath = path.join(dirPath, file);
+          const newFilePath = path.join(newDirPath, file);
+          await fsPromises.copyFile(filePath, newFilePath);
         }
-      })
-    );
-  });
-
-  fs.readdir(sourceFolderPath, (err, files) => {
-    if (err) console.error(err);
-    for (const file of files) {
-      const filePath = path.resolve(sourceFolderPath, file);
-      const copiedFilePath = path.resolve(copyFolderPath, file);
-      fs.copyFile(
-        filePath,
-        copiedFilePath,
-        fs.constants.COPYFILE_FICLONE,
-        (err) => {
-          if (err) {
-          }
-        }
-      );
+      });
+    } else {
+      fsPromises.rm(newDirPath, { recursive: true }).then(async () => {
+        await fsPromises
+          .mkdir(newDirPath, { recursive: true })
+          .then(async () => {
+            for (let file of files) {
+              const filePath = path.join(dirPath, file);
+              const newFilePath = path.join(newDirPath, file);
+              await fsPromises.copyFile(filePath, newFilePath);
+            }
+          });
+      });
     }
   });
 });

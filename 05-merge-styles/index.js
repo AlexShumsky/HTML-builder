@@ -26,7 +26,6 @@ fs.readdir(filePath, function (err, files) {
           if (err) {
           }
           arr.push(data);
-
           fs.appendFile(filePathTo, arr.join("\n"), function () {});
           arr.length = 0;
         });
